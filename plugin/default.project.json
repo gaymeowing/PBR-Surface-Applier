@@ -1,0 +1,14 @@
+{
+	"name": "PBR Surface Applier",
+	"tree": {
+		"$className": "Folder",
+		"$path": "./src",
+		"packages": {
+			"$className": "Folder",
+			"pbr_surfaces": {
+				"$path": "../lib"
+			},
+			"$path": "./packages"
+		}
+	}
+}
