@@ -9,7 +9,6 @@ local pbr_surfaces = require("./packages/pbr_surfaces")
 local plugtilly = require("./packages/plugtilly")
 local Selection = game:GetService("Selection")
 
-
 local SELECTION_CONNECTIONS = {} :: { RBXScriptConnection }
 local STRING_PLACE_ID = tostring(game.PlaceId) :: string
 local SELECTION_CHANGED_CONNECTION: RBXScriptConnection
