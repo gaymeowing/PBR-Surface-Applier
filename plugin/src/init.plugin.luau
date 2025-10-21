@@ -183,6 +183,7 @@ end)
 
 APPLY_DEFAULT_SURFACES_ACTION.Triggered:Connect(apply_default_surfaces)
 APPLY_DEFAULT_SURFACES_BUTTON.Click:Connect(apply_default_surfaces)
+APPLY_DEFAULT_SURFACES_BUTTON.ClickableWhenViewportHidden = true
 
 AUTO_APPLY_BUTTON.ClickableWhenViewportHidden = true
 AUTO_APPLY_BUTTON.Click:Connect(function()
