@@ -9,13 +9,16 @@ local pbr_surfaces = require("./packages/pbr_surfaces")
 local plugtilly = require("./packages/plugtilly")
 local Selection = game:GetService("Selection")
 
+
 local SELECTION_CONNECTIONS = {} :: { RBXScriptConnection }
 local STRING_PLACE_ID = tostring(game.PlaceId) :: string
 local SELECTION_CHANGED_CONNECTION: RBXScriptConnection
+local PREVIOUS_SELECTION = {} :: { Instance }
 local NAME = plugtilly.name(plugin)
 local ENABLED = false
 
 local APPLY_DEFAULT_SURFACES_TIP = "Sets the TopSurface to be Stud and the BottomSurface to be Inlet for the selected Part(s)"
+local RECORD_ACTION = "Update Surface Textures for a selected Part"
 local APPLY_DEFAULT_SURFACES_NAME = "Apply Default Surfaces"
 local TOOLBAR = plugin:CreateToolbar(NAME)
 local APPLY_DEFAULT_SURFACES_ACTION = plugin:CreatePluginAction(
@@ -39,7 +42,12 @@ local ENABLED_FOR_PLACES = plugtilly.setting(
 	plugin, "EnabledForPlaces", {} :: { [string]: true? }
 )
 
-local function IS_PLASTIC(part: BasePart): boolean
+--- returns a boolean indicating if the part is plastic or not
+local function RECORD_CLEARING_SURFACES(part: BasePart): boolean
+	local finish_recording = plugtilly.create_recording(plugin, RECORD_ACTION)
+	pbr_surfaces.clear_surfaces(part)
+	finish_recording(Enum.FinishRecordingOperation.Commit)
+
 	if part.Material ~= Enum.Material.Plastic then
 		warn(`[{NAME}]: Cannot apply surfaces to`, part, "because its Material is not Enum.Material.Plastic")
 		return false
@@ -48,19 +56,17 @@ local function IS_PLASTIC(part: BasePart): boolean
 	return true
 end
 
+local function RECORD_APPLYING_PROPERTIES(part: BasePart)
+	local finish_recording = plugtilly.create_recording(plugin, RECORD_ACTION)
+	pbr_surfaces.apply_from_properties(part)
+	finish_recording(Enum.FinishRecordingOperation.Append)
+end
+
 local function UPDATE_ON_PROPERTY_CHANGE(part: BasePart, property: keyof<BasePart>)
 	local connection = part:GetPropertyChangedSignal(property):Connect(function()
-		if not IS_PLASTIC(part) then
-			return
+		if RECORD_CLEARING_SURFACES(part) then
+			RECORD_APPLYING_PROPERTIES(part)
 		end
-
-		local finish_recording = plugtilly.create_recording(
-			plugin, "Update Surface Textures for a selected Part"
-		)
-
-		pbr_surfaces.clear_surfaces(part)
-		pbr_surfaces.apply_from_properties(part)
-		finish_recording(Enum.FinishRecordingOperation.Commit)
 	end)
 
 	table.insert(SELECTION_CONNECTIONS, connection)
@@ -97,16 +103,14 @@ local function apply_default_surfaces()
 end
 
 local function auto_apply_surfaces_for_part(part: BasePart): boolean
-	if not IS_PLASTIC(part) then
+	if not RECORD_CLEARING_SURFACES(part) then
 		return false
 	end
 
 	UPDATE_ON_PROPERTY_CHANGE(part, "Transparency")
 	UPDATE_ON_PROPERTY_CHANGE(part, "Material")
 	UPDATE_ON_PROPERTY_CHANGE(part, "Color")
-
-	pbr_surfaces.clear_surfaces(part)
-	pbr_surfaces.apply_from_properties(part)
+	RECORD_APPLYING_PROPERTIES(part)
 
 	for _, surface in pbr_surfaces.surfaces do
 		UPDATE_ON_PROPERTY_CHANGE(part, surface)
@@ -123,7 +127,24 @@ local function disconnect_selection_connections()
 end
 
 local function auto_apply_surfaces_for_selection()
-	for _, instance in Selection:Get() do
+	local selection = Selection:Get()
+	local is_equal = true
+
+	for index, instance in selection do
+		if PREVIOUS_SELECTION[index] ~= instance then
+			is_equal = false
+			break
+		end
+	end
+
+	if is_equal then
+		return
+	end
+
+	PREVIOUS_SELECTION = selection
+	disconnect_selection_connections()
+
+	for index, instance in selection do
 		if not instance:IsA("BasePart") then
 			continue
 		end
@@ -148,10 +169,7 @@ end
 
 local function enable()
 	if not SELECTION_CHANGED_CONNECTION then
-		SELECTION_CHANGED_CONNECTION = Selection.SelectionChanged:Connect(function()
-			disconnect_selection_connections()
-			auto_apply_surfaces_for_selection()
-		end)
+		SELECTION_CHANGED_CONNECTION = Selection.SelectionChanged:Connect(auto_apply_surfaces_for_selection)
 		auto_apply_surfaces_for_selection()
 	end
 
