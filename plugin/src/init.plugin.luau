@@ -7,6 +7,7 @@
 
 local pbr_surfaces = require("./packages/pbr_surfaces")
 local plugtilly = require("./packages/plugtilly")
+local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local Selection = game:GetService("Selection")
 local CoreGui = game:GetService("CoreGui")
 
@@ -15,6 +16,13 @@ local TOOLBAR = plugin:CreateToolbar(PLUGIN_NAME)
 local AUTO_APPLY_SURFACES_BUTTON = plugtilly.create_action_button(plugin, TOOLBAR, {
 	id = "Auto Apply Surfaces",
 	tooltip = "Enables/Disables automatically applying PBR versions of old Roblox Surfaces to selected Part(s)",
+	icon = Content.fromAssetId(133631232996249),
+	clickable_when_viewport_hidden = true,
+	allow_binding = true,
+})
+local APPLY_DEFAULT_SURFACES_BUTTON = plugtilly.create_action_button(plugin, TOOLBAR, {
+	id = "Apply Default Surfaces",
+	tooltip = "Sets the TopSurface to be Stud and the BottomSurface to be Inlet for the selected Part(s)",
 	icon = Content.fromAssetId(133631232996249),
 	clickable_when_viewport_hidden = true,
 	allow_binding = true,
@@ -42,14 +50,8 @@ do -- auto apply surfaces
 
 	local function update_part(part: BasePart)
 		local finish_recording = plugtilly.create_recording(plugin, "Update Surface Textures for a selected Part")
-		pbr_surfaces.clear_surfaces(part)
-
-		if part.Material == Enum.Material.Plastic then
-			pbr_surfaces.apply_from_properties(part)
-		else
-			warn(`[{PLUGIN_NAME}]: Cannot apply surfaces to`, part, "because its Material is not Enum.Material.Plastic")
-		end
-
+		pbr_surfaces.clear_surface_textures(part)
+		pbr_surfaces.apply_from_properties(part)
 		finish_recording(Enum.FinishRecordingOperation.Commit)
 	end
 
@@ -149,15 +151,7 @@ end
 
 do -- apply default surfaces
 
-	local ACTION_BUTTON = plugtilly.create_action_button(plugin, TOOLBAR, {
-		id = "Apply Default Surfaces",
-		tooltip = "Sets the TopSurface to be Stud and the BottomSurface to be Inlet for the selected Part(s)",
-		icon = Content.fromAssetId(133631232996249),
-		clickable_when_viewport_hidden = true,
-		allow_binding = true,
-	})
-
-	ACTION_BUTTON:on_trigger(function()
+	APPLY_DEFAULT_SURFACES_BUTTON:on_trigger(function()
 		local finish_recording = plugtilly.create_recording(plugin, "Apply Default Surfaces to Part(s) in Selection")
 
 		for _, instance in Selection:Get() do
@@ -169,7 +163,6 @@ do -- apply default surfaces
 				instance.BackSurface = Enum.SurfaceType.Smooth
 				instance.TopSurface = Enum.SurfaceType.Studs
 				instance.MaterialVariant = ""
-				instance.Material = Enum.Material.Plastic
 			end
 		end
 		finish_recording(Enum.FinishRecordingOperation.Commit)
@@ -203,6 +196,7 @@ do -- apply surface
 
 	local function ON_ACTION_TRIGGERED(action: PluginAction, surface: Enum.SurfaceType)
 		action.Triggered:Connect(function()
+			APPLY_DEFAULT_SURFACES_BUTTON:set_enabled(false)
 			AUTO_APPLY_SURFACES_BUTTON:set_enabled(false)
 			AUTO_APPLY_SURFACES_BUTTON:set_active(false)
 			APPLY_SURFACE_BUTTON:set_active(true)
@@ -212,7 +206,7 @@ do -- apply surface
 			mouse.TargetFilter = SURFACE_SELECTION
 			mouse.Icon = ""
 
-			mouse.Move:Connect(function()
+			local move_connection = mouse.Move:Connect(function()
 				local target = mouse.Target
 
 				if target then
@@ -225,7 +219,7 @@ do -- apply surface
 				end
 			end)
 
-			mouse.Button1Up:Connect(function()
+			local click_connection = mouse.Button1Up:Connect(function()
 				local target = mouse.Target
 
 				if not target then
@@ -235,21 +229,44 @@ do -- apply surface
 				local finish_recording = plugtilly.create_recording(plugin, "Apply Surface")
 				local target_surface = mouse.TargetSurface
 
-				target.Material = Enum.Material.Plastic
-				pbr_surfaces.clear_surfaces(target)
+				pbr_surfaces.clear_surface_textures(target)
 
 				if target_surface == Enum.NormalId.Right then
-					pbr_surfaces.apply(target, surface)
+					target.RightSurface = surface
+					pbr_surfaces.apply(
+						target, surface, target.TopSurface, target.BackSurface,
+						target.LeftSurface, target.BottomSurface, target.FrontSurface
+					)
 				elseif target_surface == Enum.NormalId.Top then
-					pbr_surfaces.apply(target, nil, surface)
+					target.TopSurface = surface
+					pbr_surfaces.apply(
+						target, target.RightSurface, surface, target.BackSurface,
+						target.LeftSurface, target.BottomSurface, target.FrontSurface
+					)
 				elseif target_surface == Enum.NormalId.Back then
-					pbr_surfaces.apply(target, nil, nil, surface)
+					target.BackSurface = surface
+					pbr_surfaces.apply(
+						target, target.RightSurface, target.TopSurface, surface,
+						target.LeftSurface, target.BottomSurface, target.FrontSurface
+					)
 				elseif target_surface == Enum.NormalId.Left then
-					pbr_surfaces.apply(target, nil, nil, nil, surface)
+					target.LeftSurface = surface
+					pbr_surfaces.apply(
+						target, target.RightSurface, target.TopSurface, target.BackSurface,
+						surface, target.BottomSurface, target.FrontSurface
+					)
 				elseif target_surface == Enum.NormalId.Bottom then
-					pbr_surfaces.apply(target, nil, nil, nil, nil, surface)
+					target.BottomSurface = surface
+					pbr_surfaces.apply(
+						target, target.RightSurface, target.TopSurface, target.BackSurface,
+						target.LeftSurface, surface, target.FrontSurface
+					)
 				elseif target_surface == Enum.NormalId.Front then
-					pbr_surfaces.apply(target, nil, nil, nil, nil, nil, surface)
+					target.FrontSurface = surface
+					pbr_surfaces.apply(
+						target, target.RightSurface, target.TopSurface, target.BackSurface,
+						target.LeftSurface, target.BottomSurface, surface
+					)
 				end
 
 				finish_recording(Enum.FinishRecordingOperation.Commit)
@@ -260,8 +277,12 @@ do -- apply surface
 					AUTO_APPLY_SURFACES_BUTTON:set_active(true)
 				end
 
+				APPLY_DEFAULT_SURFACES_BUTTON:set_enabled(true)
 				AUTO_APPLY_SURFACES_BUTTON:set_enabled(true)
 				APPLY_SURFACE_BUTTON:set_active(false)
+				click_connection:Disconnect()
+				move_connection:Disconnect()
+				mouse:Destroy()
 			end)
 
 			mouse.TargetFilter = SURFACE_SELECTION
