@@ -112,11 +112,6 @@ local function APPLY(
 	bottom: Enum.SurfaceType?,
 	front: Enum.SurfaceType?
 )
-	if part.Material ~= Enum.Material.Plastic then
-		warn("[PBR SURFACES]: Cannot apply surfaces to", part, "because its Material is not Enum.Material.Plastic")
-		error("[PBR SURFACES]: An error occured, see previous warning for details.")
-	end
-
 	local transparency = get_transparency(part.Transparency)
 
 	if transparency == 1 then
@@ -198,7 +193,7 @@ function pbr_surfaces.apply_from_properties(part: BasePart)
 	)
 end
 
-function pbr_surfaces.clear_surfaces(part: BasePart)
+function pbr_surfaces.clear_surface_textures(part: BasePart)
 	for _, child in part:GetChildren() do
 		if child.ClassName == "Texture" and table.find(SURFACE_NAMES, child.Name) then
 			child:Destroy()
