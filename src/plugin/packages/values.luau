@@ -7,8 +7,8 @@
 local function values<K, V>(t: { [K]: V }): { V }
 	local values = {}
 
-	for key in t do
-		table.insert(values, key)
+	for _, value in t do
+		table.insert(values, value)
 	end
 	return values
 end
