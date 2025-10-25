@@ -7,6 +7,7 @@
 
 local plugtilly = require("./packages/plugtilly")
 local pbr_surfaces = require("../pbr_surfaces")
+local values = require("./packages/values")
 local Selection = game:GetService("Selection")
 local CoreGui = game:GetService("CoreGui")
 
@@ -33,9 +34,17 @@ local AUTO_APPLY_ACTIVE = false
 
 do -- auto apply surfaces
 
+	local CONVERT_AND_UPDATE_RECORDING_ACTION = "Convert Roblox Surfaces to PBR Surfaces and Update PBR Surface Textures for a selected Part"
+	local SURFACE_NORMALS = values(pbr_surfaces.surface_normal :: { pbr_surfaces.SurfaceNormal })
 	local AUTO_APPLY_ENABLED_FOR_PLACES = plugtilly.setting(
 		plugin, "AutoApplyEnabledForPlaces", {} :: { [string]: boolean }
 	)
+	local BOTTOM_SURFACE_NORMAL = pbr_surfaces.surface_normal.bottom
+	local RIGHT_SURFACE_NORMAL= pbr_surfaces.surface_normal.right
+	local FRONT_SURFACE_NORMAL = pbr_surfaces.surface_normal.front
+	local LEFT_SURFACE_NORMAL = pbr_surfaces.surface_normal.left
+	local BACK_SURFACE_NORMAL = pbr_surfaces.surface_normal.back
+	local TOP_SURFACE_NORMAL = pbr_surfaces.surface_normal.top
 	local SELECTION_CONNECTIONS = {} :: { RBXScriptConnection }
 	local SELECTION_CHANGED_CONNECTION: RBXScriptConnection
 	local PREVIOUS_SELECTION = {} :: { Instance }
@@ -53,6 +62,19 @@ do -- auto apply surfaces
 		finish_recording(Enum.FinishRecordingOperation.Commit)
 	end
 
+	local function on_attribute_changed(part: BasePart, attribute: string)
+		if
+			attribute == BOTTOM_SURFACE_NORMAL or
+			attribute == RIGHT_SURFACE_NORMAL or
+			attribute == FRONT_SURFACE_NORMAL or
+			attribute == LEFT_SURFACE_NORMAL or
+			attribute == BACK_SURFACE_NORMAL or
+			attribute == TOP_SURFACE_NORMAL
+		then
+			update_part(part)
+		end
+	end
+
 	local function on_changed(part: BasePart, property: keyof<BasePart>)
 		if
 			property == "Transparency" or
@@ -68,10 +90,18 @@ do -- auto apply surfaces
 			property == "BackSurface" or
 			property == "TopSurface"
 		then
-			local finish_recording = plugtilly.create_recording(plugin, "Convert Changed SurfaceNormal property to SurfaceNormal attribute")
-			
-			pbr_surfaces.update_surface(part, property, (part :: any)[property])
+			local finish_recording = plugtilly.create_recording(plugin, CONVERT_AND_UPDATE_RECORDING_ACTION)
+			local property_surface_type = (part :: any)[property] :: Enum.SurfaceType
 
+			if property_surface_type ~= Enum.SurfaceType.Smooth then
+				local surface_type = pbr_surfaces.convert_roblox_surface_to_pbr_surface(part, property)
+				pbr_surfaces.update_surface(part, property, surface_type)
+			else
+				pbr_surfaces.update_surface(
+					part, property, pbr_surfaces.get_surface(part, property)
+				)
+			end
+			finish_recording(Enum.FinishRecordingOperation.Commit)
 		end
 	end
 
@@ -101,11 +131,20 @@ do -- auto apply surfaces
 				continue
 			end
 
-			table.insert(SELECTION_CONNECTIONS, instance.Changed:Connect(function(property)
-				on_changed(instance, property)
+			table.insert(SELECTION_CONNECTIONS, instance.AttributeChanged:Connect(function(attribute)
+				on_attribute_changed(instance, attribute)
 			end))
-			local finish_recording_conversion = plugtilly.create_recording(plugin, `Convert Part from Roblox Surfaces to PBR Surfaces`)
+			table.insert(SELECTION_CONNECTIONS, instance.Changed:Connect(function(property)
+				on_changed(instance, property :: any)
+			end))
+			local finish_recording = plugtilly.create_recording(plugin, CONVERT_AND_UPDATE_RECORDING_ACTION)
 
+			for _, surface_normal in SURFACE_NORMALS do
+				local surface_type = pbr_surfaces.convert_roblox_surface_to_pbr_surface(instance, surface_normal) or
+					pbr_surfaces.get_surface(instance, surface_normal)
+				pbr_surfaces.update_surface(instance, surface_normal, surface_type)
+			end
+			finish_recording(Enum.FinishRecordingOperation.Commit)
 		end
 	end
 
@@ -157,17 +196,23 @@ end
 do -- apply default surfaces
 
 	APPLY_DEFAULT_SURFACES_BUTTON:on_trigger(function()
-		local finish_recording = plugtilly.create_recording(plugin, "Apply Default Surfaces to Part(s) in Selection")
+		local finish_recording = plugtilly.create_recording(plugin, "Apply Default PBR Surfaces to Part(s) in Selection")
 
 		for _, instance in Selection:Get() do
 			if instance:IsA("BasePart") then
 				instance.RightSurface = Enum.SurfaceType.Smooth
 				instance.FrontSurface = Enum.SurfaceType.Smooth
-				instance.BottomSurface = Enum.SurfaceType.Inlet
+				instance.BottomSurface = Enum.SurfaceType.Smooth
 				instance.LeftSurface = Enum.SurfaceType.Smooth
 				instance.BackSurface = Enum.SurfaceType.Smooth
-				instance.TopSurface = Enum.SurfaceType.Studs
-				instance.MaterialVariant = ""
+				instance.TopSurface = Enum.SurfaceType.Smooth
+				-- do NOT add a update_surfaces method, it is only ever useful for this plugin
+				pbr_surfaces.update_surface(instance, "RightSurface", nil)
+				pbr_surfaces.update_surface(instance, "FrontSurface", nil)
+				pbr_surfaces.update_surface(instance, "BottomSurface", Enum.SurfaceType.Inlet)
+				pbr_surfaces.update_surface(instance, "LeftSurface", nil)
+				pbr_surfaces.update_surface(instance, "BackSurface", nil)
+				pbr_surfaces.update_surface(instance, "TopSurface", Enum.SurfaceType.Studs)
 			end
 		end
 		finish_recording(Enum.FinishRecordingOperation.Commit)
@@ -199,7 +244,24 @@ do -- apply surface
 	local SURFACE_SELECTION = Instance.new("SurfaceSelection")
 	local SELECTION_HAS_ADORNEE = false
 
+	local function NORMAL_ID_TO_SURFACE_NORMAL(normal_id: Enum.NormalId): pbr_surfaces.SurfaceNormal
+		return if normal_id == Enum.NormalId.Right then
+				"RightSurface"
+			elseif normal_id == Enum.NormalId.Top then
+				"TopSurface"
+			elseif normal_id == Enum.NormalId.Back then
+				"BackSurface"
+			elseif normal_id == Enum.NormalId.Left then
+				"LeftSurface"
+			elseif normal_id == Enum.NormalId.Bottom then
+				"BottomSurface"
+			else
+				"FrontSurface"
+	end
+
 	local function ON_ACTION_TRIGGERED(action: PluginAction, surface: Enum.SurfaceType)
+		local recording_action = `Apply PBR Surface "{surface.Name}"`
+
 		action.Triggered:Connect(function()
 			APPLY_DEFAULT_SURFACES_BUTTON:set_enabled(false)
 			AUTO_APPLY_SURFACES_BUTTON:set_enabled(false)
@@ -231,49 +293,11 @@ do -- apply surface
 					return
 				end
 
-				local finish_recording = plugtilly.create_recording(plugin, "Apply Surface")
-				local target_surface = mouse.TargetSurface
+				local finish_recording = plugtilly.create_recording(plugin, recording_action)
+				local target_surface_normal = NORMAL_ID_TO_SURFACE_NORMAL(mouse.TargetSurface)
 
-				pbr_surfaces.clear_surface_textures(target)
-
-				if target_surface == Enum.NormalId.Right then
-					target.RightSurface = surface
-					pbr_surfaces.apply(
-						target, surface, target.TopSurface, target.BackSurface,
-						target.LeftSurface, target.BottomSurface, target.FrontSurface
-					)
-				elseif target_surface == Enum.NormalId.Top then
-					target.TopSurface = surface
-					pbr_surfaces.apply(
-						target, target.RightSurface, surface, target.BackSurface,
-						target.LeftSurface, target.BottomSurface, target.FrontSurface
-					)
-				elseif target_surface == Enum.NormalId.Back then
-					target.BackSurface = surface
-					pbr_surfaces.apply(
-						target, target.RightSurface, target.TopSurface, surface,
-						target.LeftSurface, target.BottomSurface, target.FrontSurface
-					)
-				elseif target_surface == Enum.NormalId.Left then
-					target.LeftSurface = surface
-					pbr_surfaces.apply(
-						target, target.RightSurface, target.TopSurface, target.BackSurface,
-						surface, target.BottomSurface, target.FrontSurface
-					)
-				elseif target_surface == Enum.NormalId.Bottom then
-					target.BottomSurface = surface
-					pbr_surfaces.apply(
-						target, target.RightSurface, target.TopSurface, target.BackSurface,
-						target.LeftSurface, surface, target.FrontSurface
-					)
-				elseif target_surface == Enum.NormalId.Front then
-					target.FrontSurface = surface
-					pbr_surfaces.apply(
-						target, target.RightSurface, target.TopSurface, target.BackSurface,
-						target.LeftSurface, target.BottomSurface, surface
-					)
-				end
-
+				;(target :: any)[target_surface_normal] = Enum.SurfaceType.Smooth
+				pbr_surfaces.update_surface(target, target_surface_normal, surface)
 				finish_recording(Enum.FinishRecordingOperation.Commit)
 			end)
 
