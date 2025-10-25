@@ -49,6 +49,11 @@ export type SurfaceNormal =
 	with the name of *`surface_normal`* to be *`surface`*.
 ]]
 local SET_SURFACE = game.SetAttribute :: (part: BasePart, surface_normal: SurfaceNormal, surface: Enum.SurfaceType?) -> ()
+--[[
+	Gets the [Enum.SurfaceType](https://create.roblox.com/docs/reference/engine/enums/SurfaceType)
+	for the specified *`surface_normal`* on the *`part`*, by getting an attribute on *`part`*
+	with the name of *`surface_normal`*.
+]]
 local GET_SURFACE = game.GetAttribute :: (part: BasePart, surface_normal: SurfaceNormal) -> Enum.SurfaceType?
 
 local function CREATE_TEXTURE(
@@ -113,9 +118,9 @@ end
 	Converts the *`surface_normal`* property of *`part`* to be an
 	[attribute](https://create.roblox.com/docs/studio/properties#instance-attributes),
 	and sets the *`surface_normal`* property to be
-	[`Enum.SurfaceType.Smooth`](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Smooth).
+	[Enum.SurfaceType.Smooth](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Smooth).
 	If there isn't a PBR Surface Texture for the
-	[`Enum.SurfaceType`](https://create.roblox.com/docs/reference/engine/enums/SurfaceType)
+	[Enum.SurfaceType](https://create.roblox.com/docs/reference/engine/enums/SurfaceType)
 	value of the *`surface_normal`* property, then no
 	[attribute](https://create.roblox.com/docs/studio/properties#instance-attributes)
 	will be made.
@@ -288,27 +293,28 @@ local pbr_surfaces = {
 	convert_roblox_surface_to_pbr_surface = CONVERT_ROBLOX_SURFACE_TO_PBR_SURFACE,
 	--[[
 		Returns a copy of the [Texture](https://create.roblox.com/docs/reference/engine/classes/Texture) used for
-		[`Enum.SurfaceType.Universal`](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Universal)
+		[Enum.SurfaceType.Universal](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Universal)
 	]]
 	universal_texture = CREATE_CLONE_METHOD(UNIVERSAL_TEXTURE),
 	--[[
 		Returns a copy of the [Texture](https://create.roblox.com/docs/reference/engine/classes/Texture) used for
-		[`Enum.SurfaceType.Studs`](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Studs)
+		[Enum.SurfaceType.Studs](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Studs)
 	]]
 	studs_texture = CREATE_CLONE_METHOD(STUDS_TEXTURE),
 	--[[
 		Returns a copy of the [Texture](https://create.roblox.com/docs/reference/engine/classes/Texture) used for
-		[`Enum.SurfaceType.Inlet`](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Inlet)
+		[Enum.SurfaceType.Inlet](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Inlet)
 	]]
 	inlet_texture = CREATE_CLONE_METHOD(INLET_TEXTURE),
 	--[[
 		Returns a copy of the [Texture](https://create.roblox.com/docs/reference/engine/classes/Texture) used for
-		[`Enum.SurfaceType.Weld`](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Weld) and
-		[`Enum.SurfaceType.Glue`](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Glue)
+		[Enum.SurfaceType.Weld](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Weld) and
+		[Enum.SurfaceType.Glue](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Glue)
 	]]
 	weld_texture = CREATE_CLONE_METHOD(WELD_TEXTURE),
 	destroy_surfaces = DESTROY_SURFACES,
 	apply_surfaces = APPLY_SURFACES,
+	get_surface = GET_SURFACE,
 	set_surface = SET_SURFACE,
 	--- Table including each SurfaceNormal string enum
 	surface_normal = table.freeze({
