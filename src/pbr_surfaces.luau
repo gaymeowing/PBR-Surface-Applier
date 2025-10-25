@@ -390,20 +390,6 @@ function pbr_surfaces.convert_roblox_surfaces_to_pbr_surfaces(part: BasePart)
 end
 
 --[[
-	Removes all SurfaceNormal attributes from *`part`*, and destroys all SurfaceNormal
-	[Textures](https://create.roblox.com/docs/reference/engine/classes/Texture) parented to *`part`*
-]]
-function pbr_surfaces.clear_surfaces(part: BasePart)
-	SET_SURFACE(part, "RightSurface", nil)
-	SET_SURFACE(part, "TopSurface", nil)
-	SET_SURFACE(part, "BackSurface", nil)
-	SET_SURFACE(part, "LeftSurface", nil)
-	SET_SURFACE(part, "BottomSurface", nil)
-	SET_SURFACE(part, "FrontSurface", nil)
-	DESTROY_SURFACES(part)
-end
-
---[[
 	Destroys all current SurfaceNormal [Textures](https://create.roblox.com/docs/reference/engine/classes/Texture)
 	parented to *`part`*, and then parents new SurfaceNormal [Textures](https://create.roblox.com/docs/reference/engine/classes/Texture)
 	to *`part`* based on its current SurfaceNormal [Attributes](https://create.roblox.com/docs/studio/properties#instance-attributes).
@@ -419,6 +405,20 @@ function pbr_surfaces.update_from_attributes(part: BasePart)
 		GET_SURFACE(part, BOTTOM_SURFACE_NAME),
 		GET_SURFACE(part, FRONT_SURFACE_NAME)
 	)
+end
+
+--[[
+	Removes all SurfaceNormal attributes from *`part`*, and destroys all SurfaceNormal
+	[Textures](https://create.roblox.com/docs/reference/engine/classes/Texture) parented to *`part`*
+]]
+function pbr_surfaces.clear_surfaces(part: BasePart)
+	SET_SURFACE(part, "RightSurface", nil)
+	SET_SURFACE(part, "TopSurface", nil)
+	SET_SURFACE(part, "BackSurface", nil)
+	SET_SURFACE(part, "LeftSurface", nil)
+	SET_SURFACE(part, "BottomSurface", nil)
+	SET_SURFACE(part, "FrontSurface", nil)
+	DESTROY_SURFACES(part)
 end
 
 return table.freeze(pbr_surfaces)
