@@ -5,9 +5,8 @@
 	applies pbr versions of surfaces to parts
 ]]
 
-local pbr_surfaces = require("./packages/pbr_surfaces")
 local plugtilly = require("./packages/plugtilly")
-local ChangeHistoryService = game:GetService("ChangeHistoryService")
+local pbr_surfaces = require("../pbr_surfaces")
 local Selection = game:GetService("Selection")
 local CoreGui = game:GetService("CoreGui")
 
@@ -49,25 +48,30 @@ do -- auto apply surfaces
 	end
 
 	local function update_part(part: BasePart)
-		local finish_recording = plugtilly.create_recording(plugin, "Update Surface Textures for a selected Part")
-		pbr_surfaces.clear_surface_textures(part)
-		pbr_surfaces.apply_from_properties(part)
+		local finish_recording = plugtilly.create_recording(plugin, "Update PBR Surface Textures for a selected Part")
+		pbr_surfaces.update_from_attributes(part)
 		finish_recording(Enum.FinishRecordingOperation.Commit)
 	end
 
-	local function on_changed(part: BasePart, property: string)
+	local function on_changed(part: BasePart, property: keyof<BasePart>)
 		if
-			property == "BottomSurface" or
-			property == "RightSurface" or
-			property == "FrontSurface" or
-			property == "LeftSurface" or
-			property == "BackSurface" or
-			property == "TopSurface" or
 			property == "Transparency" or
 			property == "Material" or
 			property == "Color"
 		then
 			update_part(part)
+		elseif
+			property == "BottomSurface" or
+			property == "RightSurface" or
+			property == "FrontSurface" or
+			property == "LeftSurface" or
+			property == "BackSurface" or
+			property == "TopSurface"
+		then
+			local finish_recording = plugtilly.create_recording(plugin, "Convert Changed SurfaceNormal property to SurfaceNormal attribute")
+			
+			pbr_surfaces.update_surface(part, property, (part :: any)[property])
+
 		end
 	end
 
@@ -100,7 +104,8 @@ do -- auto apply surfaces
 			table.insert(SELECTION_CONNECTIONS, instance.Changed:Connect(function(property)
 				on_changed(instance, property)
 			end))
-			update_part(instance)
+			local finish_recording_conversion = plugtilly.create_recording(plugin, `Convert Part from Roblox Surfaces to PBR Surfaces`)
+
 		end
 	end
 
