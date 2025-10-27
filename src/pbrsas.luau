@@ -1,4 +1,10 @@
 
+--[[
+	PBR Attribute Stripper
+	most jank code ive ever written, but this is a cli for removing SurfaceNormal attributes from BaseParts
+	in the Workspace of a place file, or instances in a model file
+]]
+
 local process = require("@lune/process")
 local roblox = require("@lune/roblox")
 local stdio = require("@lune/stdio")
