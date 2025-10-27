@@ -9,6 +9,8 @@ local RunService = game:GetService("RunService")
 
 type RibbonToolChangedCallback = (current_ribbon_tool: Enum.RibbonTool, previous_ribbon_tool: Enum.RibbonTool) -> ()
 
+export type FinishRecording = (operation: Enum.FinishRecordingOperation, options: {}?) -> ()
+
 export type DockWidgetPluginGuiInfo = {
 	initally_enabled_should_override_restore: boolean,
 	inital_dock_state: Enum.InitialDockState,
@@ -329,9 +331,7 @@ function plugtilly.create_menu_button(
 	}, plugin_menu_button_prototype)) :: any
 end
 
-function plugtilly.create_recording(
-	plugin: Plugin, action: string
-): ((operation: Enum.FinishRecordingOperation, options: {}?) -> (), string)
+function plugtilly.create_recording(plugin: Plugin, action: string): (FinishRecording, string)
 	local identifier = ChangeHistoryService:TryBeginRecording(action)
 
 	if not identifier then
