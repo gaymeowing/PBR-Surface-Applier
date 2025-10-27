@@ -2,6 +2,6 @@
 	"name": "PBR Surface Applier",
 	"tree": {
 		"$className": "Folder",
-		"$path": "./src/plugin"
+		"$path": "./src"
 	}
 }
