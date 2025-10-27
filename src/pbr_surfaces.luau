@@ -94,13 +94,13 @@ local WELD_TEXTURE = CREATE_TEXTURE(
 -- restricting these to be SurfaceNormal so incase SurfaceNormal ever has its enum items changed ill get a type error here too
 -- alongside some nice autocomplete :3
 local BOTTOM_SURFACE_NAME: SurfaceNormal = "BottomSurface"
-local RIGHT_SURFACE_NAME: SurfaceNormal  = "RightSurface"
-local FRONT_SURFACE_NAME: SurfaceNormal  = "FrontSurface"
-local LEFT_SURFACE_NAME: SurfaceNormal  = "LeftSurface"
-local BACK_SURFACE_NAME: SurfaceNormal  = "BackSurface"
-local TOP_SURFACE_NAME: SurfaceNormal  = "TopSurface"
+local RIGHT_SURFACE_NAME: SurfaceNormal = "RightSurface"
+local FRONT_SURFACE_NAME: SurfaceNormal = "FrontSurface"
+local LEFT_SURFACE_NAME: SurfaceNormal = "LeftSurface"
+local BACK_SURFACE_NAME: SurfaceNormal = "BackSurface"
+local TOP_SURFACE_NAME: SurfaceNormal = "TopSurface"
 
-local function GET_TEXTURE_FOR_SURFACE(surface: Enum.SurfaceType): Texture
+local function SAFE_GET_TEXTURE_FOR_SURFACE(surface: Enum.SurfaceType): Texture?
 	if surface == Enum.SurfaceType.Studs then
 		return STUDS_TEXTURE
 	elseif surface ==  Enum.SurfaceType.Inlet then
@@ -110,8 +110,17 @@ local function GET_TEXTURE_FOR_SURFACE(surface: Enum.SurfaceType): Texture
 	elseif surface == Enum.SurfaceType.Weld or surface == Enum.SurfaceType.Glue then
 		return WELD_TEXTURE
 	else
+		return nil
+	end
+end
+
+local function UNSAFE_GET_TEXTURE_FOR_SURFACE(surface: Enum.SurfaceType): Texture
+	local texture = SAFE_GET_TEXTURE_FOR_SURFACE(surface)
+
+	if not texture then
 		error(`[PBR SURFACES]: Surface '{surface}' has no Texture. Only Studs, Inlet, Universal, Weld, and Glue have Textures.`, 2)
 	end
+	return texture
 end
 
 --[[
@@ -137,7 +146,7 @@ local function CONVERT_ROBLOX_SURFACE_TO_PBR_SURFACE(
 	if surface_type ~= Enum.SurfaceType.Smooth then
 		(part :: any)[surface_normal] = Enum.SurfaceType.Smooth
 
-		if GET_TEXTURE_FOR_SURFACE(surface_type) then
+		if SAFE_GET_TEXTURE_FOR_SURFACE(surface_type) then
 			SET_SURFACE(part, surface_normal, surface_type)
 			return surface_type
 		end
@@ -177,7 +186,7 @@ local function APPLY_TO_SURFACE(
 	face: Enum.NormalId,
 	texture_name: string
 ): Texture
-	local texture = GET_TEXTURE_FOR_SURFACE(surface):Clone()
+	local texture = UNSAFE_GET_TEXTURE_FOR_SURFACE(surface):Clone()
 	texture.Name = texture_name
 	texture.Color3 = color
 	texture.Face = face
@@ -361,7 +370,7 @@ function pbr_surfaces.update_surface(part: BasePart, surface_normal: SurfaceNorm
 		return
 	end
 
-	texture = GET_TEXTURE_FOR_SURFACE(surface):Clone()
+	texture = UNSAFE_GET_TEXTURE_FOR_SURFACE(surface):Clone()
 
 	if transparency then
 		texture.Transparency = transparency
