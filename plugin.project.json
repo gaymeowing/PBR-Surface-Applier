@@ -1,5 +1,6 @@
 {
 	"name": "PBR Surface Applier",
+	"globIgnorePaths": [ "~/src/pbrsas.luau" ],
 	"tree": {
 		"$className": "Folder",
 		"$path": "./src"

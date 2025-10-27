@@ -5,3 +5,4 @@
 
 [tools]
 asphalt = "jackTabsCode/asphalt@1.2.0"
+lune = "lune-org/lune@0.10.4"
