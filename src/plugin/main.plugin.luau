@@ -27,10 +27,48 @@ local APPLY_DEFAULT_SURFACES_BUTTON = plugtilly.create_action_button(plugin, TOO
 	clickable_when_viewport_hidden = true,
 	allow_binding = true,
 })
+local APPLY_SURFACE_BUTTON = plugtilly.create_menu_action_button(plugin, TOOLBAR, {
+	id = "Apply Surface",
+	tooltip = "Applies the selected Surface in the menu using a tool similar to the Decal/Texture Per Face applier tool in studio.",
+	icon = Content.fromAssetId(133631232996249),
+	clickable_when_viewport_hidden = true,
+	allow_binding = true,
+})
+local BOTTOM_SURFACE_NORMAL = pbr_surfaces.surface_normal.bottom
+local RIGHT_SURFACE_NORMAL= pbr_surfaces.surface_normal.right
+local FRONT_SURFACE_NORMAL = pbr_surfaces.surface_normal.front
+local LEFT_SURFACE_NORMAL = pbr_surfaces.surface_normal.left
+local BACK_SURFACE_NORMAL = pbr_surfaces.surface_normal.back
+local TOP_SURFACE_NORMAL = pbr_surfaces.surface_normal.top
 local STRING_PLACE_ID = tostring(game.PlaceId) :: string
 local STUDIO_SETTINGS = settings().Studio
 local ENABLE_AUTO_APPLY: () -> ()
 local AUTO_APPLY_ACTIVE = false
+
+local function UPDATE_SURFACE(
+	part: BasePart, surface_normal: pbr_surfaces.SurfaceNormal, surface_type: Enum.SurfaceType?
+)
+	if surface_type and surface_type ~= Enum.SurfaceType.Smooth then
+		-- the error doesn't matter here
+		pcall(pbr_surfaces.update_surface, part, surface_normal, surface_type)
+	else
+		local texture = part:FindFirstChild(surface_normal)
+
+		if texture then
+			texture:Destroy()
+		end
+		part:SetAttribute(surface_normal, Enum.SurfaceType.Smooth)
+	end
+end
+
+local function UPDATE_SURFACES_FROM_ATTRIBUTES(part: BasePart)
+	UPDATE_SURFACE(part, BOTTOM_SURFACE_NORMAL, pbr_surfaces.get_surface(part, BOTTOM_SURFACE_NORMAL))
+	UPDATE_SURFACE(part, RIGHT_SURFACE_NORMAL, pbr_surfaces.get_surface(part, RIGHT_SURFACE_NORMAL))
+	UPDATE_SURFACE(part, FRONT_SURFACE_NORMAL, pbr_surfaces.get_surface(part, FRONT_SURFACE_NORMAL))
+	UPDATE_SURFACE(part, LEFT_SURFACE_NORMAL, pbr_surfaces.get_surface(part, LEFT_SURFACE_NORMAL))
+	UPDATE_SURFACE(part, BACK_SURFACE_NORMAL, pbr_surfaces.get_surface(part, BACK_SURFACE_NORMAL))
+	UPDATE_SURFACE(part, TOP_SURFACE_NORMAL, pbr_surfaces.get_surface(part, TOP_SURFACE_NORMAL))
+end
 
 do -- auto apply surfaces
 
@@ -39,12 +77,6 @@ do -- auto apply surfaces
 	local AUTO_APPLY_ENABLED_FOR_PLACES = plugtilly.setting(
 		plugin, "AutoApplyEnabledForPlaces", {} :: { [string]: boolean }
 	)
-	local BOTTOM_SURFACE_NORMAL = pbr_surfaces.surface_normal.bottom
-	local RIGHT_SURFACE_NORMAL= pbr_surfaces.surface_normal.right
-	local FRONT_SURFACE_NORMAL = pbr_surfaces.surface_normal.front
-	local LEFT_SURFACE_NORMAL = pbr_surfaces.surface_normal.left
-	local BACK_SURFACE_NORMAL = pbr_surfaces.surface_normal.back
-	local TOP_SURFACE_NORMAL = pbr_surfaces.surface_normal.top
 	local SELECTION_CONNECTIONS = {} :: { RBXScriptConnection }
 	local SELECTION_CHANGED_CONNECTION: RBXScriptConnection
 	local PREVIOUS_SELECTION = {} :: { Instance }
@@ -56,22 +88,25 @@ do -- auto apply surfaces
 		table.clear(SELECTION_CONNECTIONS)
 	end
 
-	local function update_part(part: BasePart)
-		local finish_recording = plugtilly.create_recording(plugin, "Update PBR Surface Textures for a selected Part")
-		pbr_surfaces.update_from_attributes(part)
-		finish_recording(Enum.FinishRecordingOperation.Commit)
+	local function create_recording_for_update(): plugtilly.FinishRecording
+		return (plugtilly.create_recording(plugin, "Update PBR Surface Textures for a selected Part"))
 	end
 
 	local function on_attribute_changed(part: BasePart, attribute: string)
+		local surface_type = pbr_surfaces.get_surface(part, attribute :: any)
+
 		if
-			attribute == BOTTOM_SURFACE_NORMAL or
+			surface_type ~= Enum.SurfaceType.Smooth and
+			(attribute == BOTTOM_SURFACE_NORMAL or
 			attribute == RIGHT_SURFACE_NORMAL or
 			attribute == FRONT_SURFACE_NORMAL or
 			attribute == LEFT_SURFACE_NORMAL or
 			attribute == BACK_SURFACE_NORMAL or
-			attribute == TOP_SURFACE_NORMAL
+			attribute == TOP_SURFACE_NORMAL)
 		then
-			update_part(part)
+			local finish_recording = create_recording_for_update()
+			UPDATE_SURFACE(part, attribute :: any, surface_type)
+			finish_recording(Enum.FinishRecordingOperation.Commit)
 		end
 	end
 
@@ -81,7 +116,9 @@ do -- auto apply surfaces
 			property == "Material" or
 			property == "Color"
 		then
-			update_part(part)
+			local finish_recording = create_recording_for_update()
+			UPDATE_SURFACES_FROM_ATTRIBUTES(part)
+			finish_recording(Enum.FinishRecordingOperation.Commit)
 		elseif
 			property == "BottomSurface" or
 			property == "RightSurface" or
@@ -95,9 +132,9 @@ do -- auto apply surfaces
 
 			if property_surface_type ~= Enum.SurfaceType.Smooth then
 				local surface_type = pbr_surfaces.convert_roblox_surface_to_pbr_surface(part, property)
-				pbr_surfaces.update_surface(part, property, surface_type)
+				UPDATE_SURFACE(part, property, surface_type)
 			else
-				pbr_surfaces.update_surface(
+				UPDATE_SURFACE(
 					part, property, pbr_surfaces.get_surface(part, property)
 				)
 			end
@@ -142,7 +179,7 @@ do -- auto apply surfaces
 			for _, surface_normal in SURFACE_NORMALS do
 				local surface_type = pbr_surfaces.convert_roblox_surface_to_pbr_surface(instance, surface_normal) or
 					pbr_surfaces.get_surface(instance, surface_normal)
-				pbr_surfaces.update_surface(instance, surface_normal, surface_type)
+				UPDATE_SURFACE(instance, surface_normal, surface_type)
 			end
 			finish_recording(Enum.FinishRecordingOperation.Commit)
 		end
@@ -207,12 +244,12 @@ do -- apply default surfaces
 				instance.BackSurface = Enum.SurfaceType.Smooth
 				instance.TopSurface = Enum.SurfaceType.Smooth
 				-- do NOT add a update_surfaces method, it is only ever useful for this plugin
-				pbr_surfaces.update_surface(instance, "RightSurface", nil)
-				pbr_surfaces.update_surface(instance, "FrontSurface", nil)
-				pbr_surfaces.update_surface(instance, "BottomSurface", Enum.SurfaceType.Inlet)
-				pbr_surfaces.update_surface(instance, "LeftSurface", nil)
-				pbr_surfaces.update_surface(instance, "BackSurface", nil)
-				pbr_surfaces.update_surface(instance, "TopSurface", Enum.SurfaceType.Studs)
+				UPDATE_SURFACE(instance, "RightSurface", nil)
+				UPDATE_SURFACE(instance, "FrontSurface", nil)
+				UPDATE_SURFACE(instance, "BottomSurface", Enum.SurfaceType.Inlet)
+				UPDATE_SURFACE(instance, "LeftSurface", nil)
+				UPDATE_SURFACE(instance, "BackSurface", nil)
+				UPDATE_SURFACE(instance, "TopSurface", Enum.SurfaceType.Studs)
 			end
 		end
 		finish_recording(Enum.FinishRecordingOperation.Commit)
@@ -222,13 +259,6 @@ end
 
 do -- apply surface
 
-	local APPLY_SURFACE_BUTTON = plugtilly.create_menu_action_button(plugin, TOOLBAR, {
-		id = "Apply Surface",
-		tooltip = "",
-		icon = Content.fromAssetId(133631232996249),
-		clickable_when_viewport_hidden = true,
-		allow_binding = true,
-	})
 	local UNIVERSAL_ACTION = APPLY_SURFACE_BUTTON:add_new_action(
 		"Universal", Content.fromAssetId(0)
 	)
