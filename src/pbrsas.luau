@@ -231,7 +231,7 @@ elseif is_place then
 	if not workspace then
 		error("No workspace found in place file")
 	end
-	process_instances(workspace:GetDescendants())
+	process_instances(workspace:GetChildren())
 
 	if OVERWRITE then
 		local _, is_xml = IS_PLACE_FILE(INPUT_PATH)
