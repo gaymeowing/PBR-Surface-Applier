@@ -7,11 +7,6 @@
 
 local info = require("./info")
 local plugtilly = require("./packages/plugtilly")
-local pbr_surfaces = require("../pbr_surfaces")
-local values = require("./packages/values")
-local ChangeHistoryService = game:GetService("ChangeHistoryService")
-local Selection = game:GetService("Selection")
-local CoreGui = game:GetService("CoreGui")
 
 local PLUGIN_NAME = plugtilly.name(plugin)
 local TOOLBAR = plugin:CreateToolbar(PLUGIN_NAME)
