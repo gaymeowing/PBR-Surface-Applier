@@ -53,7 +53,7 @@ local function SWAP_REMOVE_PART_CONNECTION(index: number)
 	SELECTED_PART_CONNECTIONS_COUNT -= 1
 end
 
-local function disconnect_selection_connections()
+local function cleanup_previous_selection()
 	for index, connection in SELECTED_PART_CONNECTIONS do
 		-- luau arrays don't shrink
 		SELECTED_PART_CONNECTIONS[index] = nil
@@ -67,6 +67,7 @@ local function disconnect_selection_connections()
 
 	OTHER_SELECTED_CONNECTIONS_COUNT = 0
 	SELECTED_PART_CONNECTIONS_COUNT = 0
+	table.clear(APPLYING_FOR_PARTS)
 end
 
 local function on_attribute_changed(part: BasePart, attribute: string)
@@ -175,6 +176,7 @@ end
 local function auto_apply_surfaces_for_selection()
 	local selection = Selection:Get()
 
+	print("ooo i changed")
 	if #selection == #PREVIOUS_SELECTION then
 		local is_equal = true
 
@@ -191,7 +193,7 @@ local function auto_apply_surfaces_for_selection()
 	end
 
 	PREVIOUS_SELECTION = selection
-	disconnect_selection_connections()
+	cleanup_previous_selection()
 
 	for index, instance in selection do
 		if instance:IsA("BasePart") then
@@ -201,6 +203,7 @@ local function auto_apply_surfaces_for_selection()
 		local connection = safe_descendant_added(instance, function(descendant)
 			if descendant:IsA("BasePart") and not table.find(selection, descendant) then
 				auto_apply_for_part(descendant)
+				print("applying for:", descendant)
 			end
 		end)
 
@@ -234,7 +237,7 @@ FEATURE_BUTTON:on_trigger(function()
 
 		if SELECTION_CHANGED_CONNECTION then
 			SELECTION_CHANGED_CONNECTION:Disconnect()
-			disconnect_selection_connections()
+			cleanup_previous_selection()
 		end
 
 		FEATURE_BUTTON:set_active(false)
