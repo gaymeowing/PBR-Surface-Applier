@@ -25,21 +25,6 @@ local FEATURE_INFO = info.apply_surface
 local FEATURE_BUTTON = FEATURE_INFO.button
 local plugin = info.plugin
 
-local function NORMAL_ID_TO_SURFACE_NORMAL(normal_id: Enum.NormalId): pbr_surfaces.SurfaceNormal
-	return if normal_id == Enum.NormalId.Right then
-			"RightSurface"
-		elseif normal_id == Enum.NormalId.Top then
-			"TopSurface"
-		elseif normal_id == Enum.NormalId.Back then
-			"BackSurface"
-		elseif normal_id == Enum.NormalId.Left then
-			"LeftSurface"
-		elseif normal_id == Enum.NormalId.Bottom then
-			"BottomSurface"
-		else
-			"FrontSurface"
-end
-
 local function ON_ACTION_TRIGGERED(action: PluginAction, surface: Enum.SurfaceType)
 	local recording_action = `Apply Surface '{surface.Name}'`
 
