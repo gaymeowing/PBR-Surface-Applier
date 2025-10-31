@@ -176,7 +176,6 @@ end
 local function auto_apply_surfaces_for_selection()
 	local selection = Selection:Get()
 
-	print("ooo i changed")
 	if #selection == #PREVIOUS_SELECTION then
 		local is_equal = true
 
