@@ -8,7 +8,7 @@
 local pbr_surfaces = require("../pbr_surfaces")
 local info = require("./info")
 
-local INAVLID_SURFACE_WARNING = `[{info.plugin_name}]: Cannot apply surface '%*' to SurfaceNormal '%*' because surface is not`
+local INAVLID_SURFACE_WARNING = `[{info.plugin_name}]: Cannot apply surface '%*' to SurfaceNormal '%*' because surface is not `
 
 local function update_surface(
 	part: BasePart, surface_normal: pbr_surfaces.SurfaceNormal, surface_type: Enum.SurfaceType?
