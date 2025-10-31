@@ -33,10 +33,10 @@ local function update_surface(
 end
 
 INAVLID_SURFACE_WARNING ..= table.concat({
-	Enum.SurfaceType.Universal,
-	Enum.SurfaceType.Inlet,
-	Enum.SurfaceType.Studs,
-	Enum.SurfaceType.Glue,
+	tostring(Enum.SurfaceType.Universal),
+	tostring(Enum.SurfaceType.Inlet),
+	tostring(Enum.SurfaceType.Studs),
+	tostring(Enum.SurfaceType.Glue),
 }, ", ")
 INAVLID_SURFACE_WARNING ..= `, or {Enum.SurfaceType.Weld}.`
 
