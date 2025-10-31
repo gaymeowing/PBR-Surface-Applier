@@ -7,8 +7,6 @@
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local RunService = game:GetService("RunService")
 
-type RibbonToolChangedCallback = (current_ribbon_tool: Enum.RibbonTool, previous_ribbon_tool: Enum.RibbonTool) -> ()
-
 export type FinishRecording = (operation: Enum.FinishRecordingOperation, options: {}?) -> ()
 
 export type DockWidgetPluginGuiInfo = {
@@ -48,7 +46,7 @@ type PluginButton = {
 	read button: PluginToolbarButton,
 }
 
-type PluginMenuButton = PluginButton & {
+export type PluginMenuButton = PluginButton & {
 	add_seperator: (plugin_menu_button: PluginMenuButton, plugin_action: PluginAction | PluginActionButton) -> PluginMenuButton,
 	add_new_action: (plugin_menu_button: PluginMenuButton, id: string, icon: Content, title: string?) -> PluginAction,
 	add_action: ((plugin_menu_button: PluginMenuButton, plugin_action: PluginAction) -> PluginAction) &
@@ -59,7 +57,7 @@ type PluginMenuButton = PluginButton & {
 	read menu: PluginMenu,
 }
 
-type PluginActionButton = PluginButton & {
+export type PluginActionButton = PluginButton & {
 	on_trigger: (plugin_action_button: PluginActionButton, f: () -> ()) -> (() -> ()),
 	destroy: (plugin_action_button: PluginActionButton) -> (),
 	read action: PluginAction,
@@ -212,23 +210,6 @@ local plugtilly = {
 	name = GET_NAME,
 }
 
-function plugtilly.on_ribbon_tool_changed(plugin: Plugin, f: RibbonToolChangedCallback): () -> ()
-	local previous_ribbon_tool = plugin:GetSelectedRibbonTool()
-
-	local connection = RunService.PostSimulation:Connect(function()
-		local current_ribbon_tool = plugin:GetSelectedRibbonTool()
-
-		if current_ribbon_tool ~= previous_ribbon_tool then
-			f(current_ribbon_tool, previous_ribbon_tool)
-			previous_ribbon_tool = current_ribbon_tool
-		end
-	end)
-
-	return function()
-		connection:Disconnect()
-	end
-end
-
 --[[
 	Wrapper for Plugin:CreateDockWidgetPluginGui() that instead uses a table for info,
 	and also will automatically set the name of the DockWidgetPluginGui based on the plugins name
@@ -331,22 +312,44 @@ function plugtilly.create_menu_button(
 	}, plugin_menu_button_prototype)) :: any
 end
 
-function plugtilly.create_recording(plugin: Plugin, action: string): (FinishRecording, string)
-	local identifier = ChangeHistoryService:TryBeginRecording(action)
+function plugtilly.try_create_recording(
+	plugin: Plugin, action_name: string, display_name: string?
+): FinishRecording?
+	local identifier = ChangeHistoryService:TryBeginRecording(action_name, display_name)
 
 	if not identifier then
 		local name = GET_NAME(plugin)
 
 		if RunService:IsEdit() then
-			error(`[{name}]: Could not start recording changes for action "{action}"`, 2)
+			warn(`[{name}]: Could not start recording changes for action '{action_name or display_name}'`)
 		else
-			error(`[{name}]: Cannot use {name} during a playtest.`, 2)
+			warn(`[{name}]: Cannot do action '{action_name or display_name}' during a playtest.`)
+		end
+		return nil
+	end
+
+	return function(operation, options)
+		ChangeHistoryService:FinishRecording(identifier :: any, operation, options :: any)
+	end
+end
+
+
+function plugtilly.create_recording(plugin: Plugin, action_name: string, display_name: string?): FinishRecording
+	local identifier = ChangeHistoryService:TryBeginRecording(action_name, display_name)
+
+	if not identifier then
+		local name = GET_NAME(plugin)
+
+		if RunService:IsEdit() then
+			error(`[{name}]: Could not start recording changes for action '{display_name or action_name}'`, 2)
+		else
+			error(`[{name}]: Cannot do action '{display_name or action_name}' during a playtest.`, 2)
 		end
 	end
 
 	return function(operation, options)
 		ChangeHistoryService:FinishRecording(identifier :: any, operation, options :: any)
-	end, identifier
+	end
 end
 
 return table.freeze(plugtilly)
