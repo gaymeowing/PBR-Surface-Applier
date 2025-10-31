@@ -203,7 +203,6 @@ local function auto_apply_surfaces_for_selection()
 		local connection = safe_descendant_added(instance, function(descendant)
 			if descendant:IsA("BasePart") and not table.find(selection, descendant) then
 				auto_apply_for_part(descendant)
-				print("applying for:", descendant)
 			end
 		end)
 
