@@ -411,7 +411,9 @@ end
 
 --[[
 	Converts the SurfaceNormal properties of *`part`* to be SurfaceNormal
-	[Attributes](https://create.roblox.com/docs/studio/properties#instance-attributes)
+	[Attributes](https://create.roblox.com/docs/studio/properties#instance-attributes),
+	and then applies the [Textures](https://create.roblox.com/docs/reference/engine/classes/Texture)
+	for those surfaces.
 ]]
 function pbr_surfaces.convert_roblox_surfaces_to_pbr_surfaces(part: BasePart)
 	APPLY_SURFACES(
