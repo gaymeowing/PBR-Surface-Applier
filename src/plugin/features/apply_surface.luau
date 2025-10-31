@@ -40,7 +40,7 @@ local function ON_ACTION_TRIGGERED(action: PluginAction, surface: Enum.SurfaceTy
 		local mouse = plugin:GetMouse()
 		mouse.TargetFilter = SURFACE_SELECTION
 
-		local move_connection = RunService.PostSimulation:Connect(function()
+		local move_connection = RunService.Heartbeat:Connect(function()
 			local target = mouse.Target
 
 			if target then
