@@ -91,14 +91,12 @@ local WELD_TEXTURE = CREATE_TEXTURE(
 	Content.fromAssetId(82754842470978),
 	2
 )
--- restricting these to be SurfaceNormal so incase SurfaceNormal ever has its enum items changed ill get a type error here too
--- alongside some nice autocomplete :3
-local BOTTOM_SURFACE_NAME: SurfaceNormal = "BottomSurface"
-local RIGHT_SURFACE_NAME: SurfaceNormal = "RightSurface"
-local FRONT_SURFACE_NAME: SurfaceNormal = "FrontSurface"
-local LEFT_SURFACE_NAME: SurfaceNormal = "LeftSurface"
-local BACK_SURFACE_NAME: SurfaceNormal = "BackSurface"
-local TOP_SURFACE_NAME: SurfaceNormal = "TopSurface"
+local BOTTOM_SURFACE_NAME = "BottomSurface"
+local RIGHT_SURFACE_NAME = "RightSurface"
+local FRONT_SURFACE_NAME = "FrontSurface"
+local LEFT_SURFACE_NAME = "LeftSurface"
+local BACK_SURFACE_NAME = "BackSurface"
+local TOP_SURFACE_NAME = "TopSurface"
 
 local function SAFE_GET_TEXTURE_FOR_SURFACE(surface: Enum.SurfaceType): Texture?
 	if surface == Enum.SurfaceType.Studs then
