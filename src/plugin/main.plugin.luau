@@ -16,7 +16,7 @@ info.auto_apply_surfaces = {
 	button = plugtilly.create_action_button(plugin, TOOLBAR, {
 		id = "Auto Apply Surfaces",
 		tooltip = "Enables/Disables automatically applying PBR versions of old Roblox Surfaces to selected Part(s)",
-		icon = Content.fromAssetId(133631232996249),
+		icon = Content.fromAssetId(77417224826482),
 		clickable_when_viewport_hidden = true,
 		allow_binding = true,
 	}),
@@ -26,7 +26,7 @@ info.auto_apply_surfaces = {
 info.apply_default_surfaces_button = plugtilly.create_action_button(plugin, TOOLBAR, {
 	id = "Apply Default Surfaces",
 	tooltip = "Sets the TopSurface to be Stud and the BottomSurface to be Inlet for the selected Part(s)",
-	icon = Content.fromAssetId(133631232996249),
+	icon = Content.fromAssetId(89560886287829),
 	clickable_when_viewport_hidden = true,
 	allow_binding = true,
 })
@@ -34,23 +34,23 @@ info.apply_default_surfaces_button = plugtilly.create_action_button(plugin, TOOL
 local apply_surface_button = plugtilly.create_menu_action_button(plugin, TOOLBAR, {
 	id = "Apply Surface",
 	tooltip = "Applies the selected Surface in the menu using a tool similar to the Decal/Texture Per Face applier tool in studio.",
-	icon = Content.fromAssetId(133631232996249),
+	icon = Content.fromAssetId(93521674455552),
 	clickable_when_viewport_hidden = true,
 	allow_binding = true,
 })
 
 info.apply_surface = {
-	universal_surface_action = apply_surface_button:add_new_action("Universal", Content.fromAssetId(133631232996249)),
-	inlet_surface_action = apply_surface_button:add_new_action("Inlet", Content.fromAssetId(133631232996249)),
-	studs_surface_action = apply_surface_button:add_new_action("Studs", Content.fromAssetId(133631232996249)),
-	weld_surface_action = apply_surface_button:add_new_action("Weld", Content.fromAssetId(133631232996249)),
+	universal_surface_action = apply_surface_button:add_new_action("Universal", Content.fromAssetId(93521674455552)),
+	inlet_surface_action = apply_surface_button:add_new_action("Inlet", Content.fromAssetId(93521674455552)),
+	studs_surface_action = apply_surface_button:add_new_action("Studs", Content.fromAssetId(93521674455552)),
+	weld_surface_action = apply_surface_button:add_new_action("Weld", Content.fromAssetId(93521674455552)),
 	button = apply_surface_button,
 }
 
 info.convert_place_to_pbr_surfaces = plugtilly.create_action_button(plugin, TOOLBAR, {
 	id = "Convert Place to PBR Surfaces",
 	tooltip = "Converts every Part in the current Place to use PBR Surfaces instead of Roblox Surfaces",
-	icon = Content.fromAssetId(133631232996249),
+	icon = Content.fromAssetId(78705581677742),
 	clickable_when_viewport_hidden = true,
 	allow_binding = false,
 })
