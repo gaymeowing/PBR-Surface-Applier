@@ -155,7 +155,9 @@ local function CONVERT_ROBLOX_SURFACE_TO_PBR_SURFACE(
 	return nil
 end
 
-local function surface_normal_to_normal_id(surface_normal: SurfaceNormal): Enum.NormalId
+--- Gives the corresponding [Enum.NormalId](https://create.roblox.com/docs/reference/engine/enums/NormalId)
+--- for the provided *`surface_normal`*.
+local function SURFACE_NORMAL_TO_NORMAL_ID(surface_normal: SurfaceNormal): Enum.NormalId
 	return if surface_normal == RIGHT_SURFACE_NAME then
 			Enum.NormalId.Right
 		elseif surface_normal == TOP_SURFACE_NAME then
@@ -300,6 +302,7 @@ end
 
 local pbr_surfaces = {
 	convert_roblox_surface_to_pbr_surface = CONVERT_ROBLOX_SURFACE_TO_PBR_SURFACE,
+	surface_normal_to_normal_id = SURFACE_NORMAL_TO_NORMAL_ID,
 	--[[
 		Returns a copy of the [Texture](https://create.roblox.com/docs/reference/engine/classes/Texture) used for
 		[Enum.SurfaceType.Universal](https://create.roblox.com/docs/reference/engine/enums/SurfaceType#Universal)
@@ -342,6 +345,32 @@ local pbr_surfaces = {
 	}),
 }
 
+--- Returns if there is a [Texture](https://create.roblox.com/docs/reference/engine/classes/Texture)
+--- for the specified *`surface`*.
+function pbr_surfaces.has_texture_for_surface(surface: Enum.SurfaceType): boolean
+	return surface == Enum.SurfaceType.Studs
+		or surface ==  Enum.SurfaceType.Inlet
+		or surface == Enum.SurfaceType.Universal
+		or surface == Enum.SurfaceType.Weld
+		or surface == Enum.SurfaceType.Glue
+end
+
+--- Gives the corresponding SurfaceNormal for the provided *`normal_id`*.
+function pbr_surfaces.normal_id_to_surface_normal(normal_id: Enum.NormalId): SurfaceNormal
+	return if normal_id == Enum.NormalId.Right then
+			RIGHT_SURFACE_NAME
+		elseif normal_id == Enum.NormalId.Top then
+			TOP_SURFACE_NAME
+		elseif normal_id == Enum.NormalId.Back then
+			BACK_SURFACE_NAME
+		elseif normal_id == Enum.NormalId.Left then
+			LEFT_SURFACE_NAME
+		elseif normal_id == Enum.NormalId.Bottom then
+			BOTTOM_SURFACE_NAME
+		else
+			FRONT_SURFACE_NAME
+end
+
 --[[
 	Sets the *`surface`* for the specified *`surface_normal`* on the *`part`*, by setting an
 	[attribute](https://create.roblox.com/docs/studio/properties#instance-attributes) on *`part`*
@@ -376,7 +405,7 @@ function pbr_surfaces.update_surface(part: BasePart, surface_normal: SurfaceNorm
 		texture.Transparency = transparency
 	end
 
-	texture.Face = surface_normal_to_normal_id(surface_normal)
+	texture.Face = SURFACE_NORMAL_TO_NORMAL_ID(surface_normal)
 	texture.Name = surface_normal
 	texture.Color3 = part.Color
 	texture.Parent = part
