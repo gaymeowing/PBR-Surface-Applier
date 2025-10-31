@@ -14,13 +14,18 @@ local plugin = info.plugin
 
 FEATURE_BUTTON:on_trigger(function()
 	local finish_recording = plugtilly.create_recording(plugin, "Convert Place to PBR Surfaces")
+	FEATURE_BUTTON:set_enabled(false)
+	FEATURE_BUTTON:set_active(true)
 
 	for _, instance in game:GetDescendants() do
 		if instance:IsA("BasePart") then
 			pbr_surfaces.convert_roblox_surfaces_to_pbr_surfaces(instance)
 		end
 	end
+
 	finish_recording(Enum.FinishRecordingOperation.Commit)
+	FEATURE_BUTTON:set_enabled(true)
+	FEATURE_BUTTON:set_active(false)
 end)
 
 return nil
