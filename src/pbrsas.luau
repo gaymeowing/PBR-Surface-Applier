@@ -31,16 +31,15 @@ local function IS_PLACE_FILE(path: string): (boolean, boolean)
 end
 
 local function SWAP_REMOVE<V>(t: { V }, index: number, len: number): V
-	if len ~= 1 then
-		local value = t[index]
+	local value = t[index]
+
+	if len ~= index then
 		t[index] = t[len]
 		t[len] = nil
-		return value
 	else
-		local value = t[len]
 		t[len] = nil
-		return value
 	end
+	return value
 end
 
 -- returns if its a model file, if its an xml file
