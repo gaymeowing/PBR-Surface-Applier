@@ -22,3 +22,5 @@ FEATURE_BUTTON:on_trigger(function()
 	end
 	finish_recording(Enum.FinishRecordingOperation.Commit)
 end)
+
+return nil
