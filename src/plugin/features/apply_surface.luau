@@ -55,7 +55,7 @@ local function ON_ACTION_TRIGGERED(action: PluginAction, surface: Enum.SurfaceTy
 		local click_connection = mouse.Button1Up:Connect(function()
 			local target = mouse.Target
 
-			if not target then
+			if target.ClassName == "Terrain" or not target then
 				return
 			end
 

@@ -196,12 +196,16 @@ local function auto_apply_surfaces_for_selection()
 	cleanup_previous_selection()
 
 	for index, instance in selection do
-		if instance:IsA("BasePart") then
+		if instance:IsA("BasePart") and instance.ClassName ~= "Terrain" then
 			auto_apply_for_part(instance)
 		end
 
 		local connection = safe_descendant_added(instance, function(descendant)
-			if descendant:IsA("BasePart") and not table.find(selection, descendant) then
+			if
+				descendant:IsA("BasePart") and
+				instance.ClassName ~= "Terrain"
+				and not table.find(selection, descendant)
+			then
 				auto_apply_for_part(descendant)
 			end
 		end)

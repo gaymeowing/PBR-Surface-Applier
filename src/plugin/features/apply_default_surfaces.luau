@@ -32,12 +32,12 @@ FEATURE_BUTTON:on_trigger(function()
 	local finish_recording = plugtilly.create_recording(plugin, "Apply Default Surfaces to selected part(s)")
 
 	for _, instance in Selection:Get() do
-		if instance:IsA("BasePart") then
+		if instance:IsA("BasePart") and instance.ClassName ~= "Terrain" then
 			apply_default_surfaces_for_part(instance)
 		end
 
 		for _, descendant in instance:GetDescendants() do
-			if descendant:IsA("BasePart") then
+			if descendant:IsA("BasePart") and instance.ClassName ~= "Terrain" then
 				apply_default_surfaces_for_part(descendant)
 			end
 		end
