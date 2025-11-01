@@ -18,7 +18,7 @@ FEATURE_BUTTON:on_trigger(function()
 	FEATURE_BUTTON:set_active(true)
 
 	for _, instance in game:GetDescendants() do
-		if instance:IsA("BasePart") then
+		if instance:IsA("BasePart") and instance.ClassName ~= "Terrain" then
 			pbr_surfaces.convert_roblox_surfaces_to_pbr_surfaces(instance)
 		end
 	end
