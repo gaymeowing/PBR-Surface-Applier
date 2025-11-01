@@ -17,7 +17,6 @@ local CONVERT_AND_UPDATE_ACTION = "Convert Roblox Surfaces to PBR Surfaces and U
 local UPDATE_ACTION = "Update PBR Surface Textures for a selected Part"
 local DISPLAY_ACTION_NAME = "Auto Apply Surfaces"
 local STRING_PLACE_ID = tostring(game.PlaceId)
-local PREVIOUS_SELECTION = {} :: { Instance }
 
 local OTHER_SELECTED_CONNECTIONS = table.create(100) :: { RBXScriptConnection }
 local SELECTED_PART_CONNECTIONS = table.create(100) :: { RBXScriptConnection }
@@ -167,7 +166,6 @@ local function auto_apply_for_part(part: BasePart)
 	for _, surface_normal in SURFACE_NORMALS do
 		local surface_type = pbr_surfaces.convert_roblox_surface_to_pbr_surface(part, surface_normal)
 			or pbr_surfaces.get_surface(part, surface_normal)
-			or Enum.SurfaceType.Smooth
 		update_surface(part, surface_normal, surface_type)
 	end
 
@@ -176,26 +174,9 @@ end
 
 local function auto_apply_surfaces_for_selection()
 	local selection = Selection:Get()
-
-	if #selection == #PREVIOUS_SELECTION then
-		local is_equal = true
-
-		for index, instance in selection do
-			if PREVIOUS_SELECTION[index] ~= instance then
-				is_equal = false
-				break
-			end
-		end
-
-		if is_equal then
-			return
-		end
-	end
-
-	PREVIOUS_SELECTION = selection
 	cleanup_previous_selection()
 
-	for index, instance in selection do
+	for _, instance in selection do
 		if instance:IsA("BasePart") and instance.ClassName ~= "Terrain" then
 			auto_apply_for_part(instance)
 		end
@@ -216,11 +197,8 @@ local function auto_apply_surfaces_for_selection()
 end
 
 local function enable_auto_apply_surfaces()
-	if not SELECTION_CHANGED_CONNECTION then
-		SELECTION_CHANGED_CONNECTION = Selection.SelectionChanged:Connect(auto_apply_surfaces_for_selection)
-		auto_apply_surfaces_for_selection()
-	end
-
+	SELECTION_CHANGED_CONNECTION = Selection.SelectionChanged:Connect(auto_apply_surfaces_for_selection)
+	auto_apply_surfaces_for_selection()
 	FEATURE_BUTTON:set_active(true)
 	FEATURE_INFO.active = true
 end
