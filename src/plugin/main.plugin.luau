@@ -40,10 +40,10 @@ local apply_surface_button = plugtilly.create_menu_action_button(plugin, TOOLBAR
 })
 
 info.apply_surface = {
-	universal_surface_action = apply_surface_button:add_new_action("Universal", Content.fromAssetId(93521674455552)),
-	inlet_surface_action = apply_surface_button:add_new_action("Inlet", Content.fromAssetId(93521674455552)),
-	studs_surface_action = apply_surface_button:add_new_action("Studs", Content.fromAssetId(93521674455552)),
-	weld_surface_action = apply_surface_button:add_new_action("Weld", Content.fromAssetId(93521674455552)),
+	universal_surface_action = apply_surface_button:add_new_action("Universal", Content.fromAssetId(92298039781489)),
+	inlet_surface_action = apply_surface_button:add_new_action("Inlet", Content.fromAssetId(76938381519853)),
+	studs_surface_action = apply_surface_button:add_new_action("Studs", Content.fromAssetId(75195975589532)),
+	weld_surface_action = apply_surface_button:add_new_action("Weld", Content.fromAssetId(130454403611833)),
 	button = apply_surface_button,
 }
 
