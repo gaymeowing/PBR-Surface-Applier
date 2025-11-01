@@ -18,7 +18,7 @@ info.auto_apply_surfaces = {
 		tooltip = "Enables/Disables automatically applying PBR versions of old Roblox Surfaces to selected Part(s)",
 		icon = Content.fromAssetId(77417224826482),
 		clickable_when_viewport_hidden = true,
-		allow_binding = true,
+		allow_binding = false,
 	}),
 	active = false,
 }
@@ -28,7 +28,7 @@ info.apply_default_surfaces_button = plugtilly.create_action_button(plugin, TOOL
 	tooltip = "Sets the TopSurface to be Stud and the BottomSurface to be Inlet for the selected Part(s)",
 	icon = Content.fromAssetId(89560886287829),
 	clickable_when_viewport_hidden = true,
-	allow_binding = true,
+	allow_binding = false,
 })
 
 local apply_surface_button = plugtilly.create_menu_action_button(plugin, TOOLBAR, {
@@ -36,7 +36,7 @@ local apply_surface_button = plugtilly.create_menu_action_button(plugin, TOOLBAR
 	tooltip = "Applies the selected Surface in the menu using a tool similar to the Decal/Texture Per Face applier tool in studio.",
 	icon = Content.fromAssetId(93521674455552),
 	clickable_when_viewport_hidden = true,
-	allow_binding = true,
+	allow_binding = false,
 })
 
 info.apply_surface = {
