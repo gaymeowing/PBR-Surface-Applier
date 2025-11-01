@@ -31,7 +31,6 @@ local function ON_ACTION_TRIGGERED(action: PluginAction, surface: Enum.SurfaceTy
 	action.Triggered:Connect(function()
 		for _, plugin_button in OTHER_FEATURE_BUTTONS do
 			plugin_button:set_enabled(false)
-			plugin_button:set_active(false)
 		end
 
 		FEATURE_BUTTON:set_active(true)
@@ -69,10 +68,6 @@ local function ON_ACTION_TRIGGERED(action: PluginAction, surface: Enum.SurfaceTy
 		end)
 
 		plugin.Deactivation:Once(function()
-			if AUTO_APPLY_SURFACES_FEATURE_INFO.active then
-				AUTO_APPLY_SURFACES_BUTTON:set_active(true)
-			end
-
 			for _, plugin_button in OTHER_FEATURE_BUTTONS do
 				plugin_button:set_enabled(true)
 			end
