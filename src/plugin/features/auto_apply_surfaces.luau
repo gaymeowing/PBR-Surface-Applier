@@ -167,6 +167,7 @@ local function auto_apply_for_part(part: BasePart)
 	for _, surface_normal in SURFACE_NORMALS do
 		local surface_type = pbr_surfaces.convert_roblox_surface_to_pbr_surface(part, surface_normal)
 			or pbr_surfaces.get_surface(part, surface_normal)
+			or Enum.SurfaceType.Smooth
 		update_surface(part, surface_normal, surface_type)
 	end
 
