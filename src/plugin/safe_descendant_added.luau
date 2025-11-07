@@ -7,10 +7,10 @@
 	returns the RBXScriptConnection for DescendantAdded
 ]]
 
-local function safe_descendant_added(
-	instance: Instance, f: (descendant: Instance) -> ()
+local function safe_descendant_added<I>(
+	instance: Instance, selector: string, f: (descendant: I & Instance) -> ()
 ): RBXScriptConnection
-	for _, descendant in instance:GetDescendants() do
+	for _, descendant in instance:QueryDescendants(selector) do
 		f(descendant)
 	end
 

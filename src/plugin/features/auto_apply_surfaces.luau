@@ -181,9 +181,8 @@ local function auto_apply_surfaces_for_selection()
 			auto_apply_for_part(instance)
 		end
 
-		local connection = safe_descendant_added(instance, function(descendant)
+		local connection = safe_descendant_added(instance, "BasePart", function(descendant: BasePart)
 			if
-				descendant:IsA("BasePart") and
 				instance.ClassName ~= "Terrain"
 				and not table.find(selection, descendant)
 			then

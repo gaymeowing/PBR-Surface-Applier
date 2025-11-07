@@ -36,9 +36,9 @@ FEATURE_BUTTON:on_trigger(function()
 			apply_default_surfaces_for_part(instance)
 		end
 
-		for _, descendant in instance:GetDescendants() do
-			if descendant:IsA("BasePart") and instance.ClassName ~= "Terrain" then
-				apply_default_surfaces_for_part(descendant)
+		for _, descendant: BasePart in instance:QueryDescendants("BasePart") do
+			if descendant.ClassName ~= "Terrain" then
+				apply_default_surfaces_for_part(descendant :: any)
 			end
 		end
 	end
