@@ -24,6 +24,7 @@ local APPLYING_FOR_PARTS = {} :: { [BasePart]: true? }
 local SELECTION_CHANGED_CONNECTION: RBXScriptConnection
 local OTHER_SELECTED_CONNECTIONS_COUNT = 0
 local SELECTED_PART_CONNECTIONS_COUNT = 0
+local SELECTION: { Instance }
 
 local SURFACE_NORMALS = values(pbr_surfaces.surface_normal :: { pbr_surfaces.SurfaceNormal })
 local BOTTOM_SURFACE_NORMAL = pbr_surfaces.surface_normal.bottom
@@ -173,22 +174,32 @@ local function auto_apply_for_part(part: BasePart)
 end
 
 local function auto_apply_surfaces_for_selection()
-	local selection = Selection:Get()
+	SELECTION = Selection:Get()
 	cleanup_previous_selection()
 
-	for _, instance in selection do
+	for _, instance in SELECTION do
 		if instance:IsA("BasePart") and instance.ClassName ~= "Terrain" then
 			auto_apply_for_part(instance)
 		end
 
-		local connection = safe_descendant_added(instance, "BasePart", function(descendant: BasePart)
+		local connection = instance.DescendantAdded:Connect(function(descendant)
 			if
-				instance.ClassName ~= "Terrain"
-				and not table.find(selection, descendant)
+				descendant.ClassName ~= "Terrain"
+				and descendant:IsA("BasePart")
+				and not table.find(SELECTION, descendant)
 			then
 				auto_apply_for_part(descendant)
 			end
 		end)
+
+		for _, descendant: BasePart in instance:QueryDescendants("BasePart") do
+			if
+				descendant.ClassName ~= "Terrain"
+				and not table.find(SELECTION, descendant)
+			then
+				auto_apply_for_part(descendant :: any)
+			end
+		end
 
 		OTHER_SELECTED_CONNECTIONS_COUNT += 1
 		OTHER_SELECTED_CONNECTIONS[OTHER_SELECTED_CONNECTIONS_COUNT] = connection
