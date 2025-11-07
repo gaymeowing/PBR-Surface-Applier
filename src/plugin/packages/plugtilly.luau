@@ -89,12 +89,21 @@ end
 
 --[[
 	Gives the actual name of the plugin, as plugins that are loaded in via
-	the plugins folder have "user_" appended to the beginning and ".rbxm"
+	the plugins folder have "user_" appended to the beginning and ".rbxm" or ".rbxmx"
  	appended at the end of their instance name.
+
+	Also replaces dashes in the name with spaces, because of how some operating systems
+	don't allow spaces in file names. So "user_PBR-Surface-Applier.rbxm" becomes "PBR Surface Applier".
 ]]
 local function GET_NAME(plugin: Plugin): string
 	local name = plugin.Name
-	return string.match(name, "user_(.-)%.rbxm") or name
+
+	if string.sub(name, 1, 5) == "user_" then
+		local extention_start = string.find(name, ".", 1, true) :: number
+		name = string.sub(name, 5, #name - (#name - extention_start))
+	end
+
+	return (string.gsub(name, "%-", " "))
 end
 
 local plugin_button_prototype = {} :: PluginButton
