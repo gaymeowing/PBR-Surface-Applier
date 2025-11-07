@@ -5,7 +5,6 @@
 	Enables/Disables automatically applying PBR versions of old Roblox Surfaces to selected Part(s)
 ]]
 
-local safe_descendant_added = require("../safe_descendant_added")
 local update_surface = require("../update_surface")
 local pbr_surfaces = require("../../pbr_surfaces")
 local plugtilly = require("../packages/plugtilly")
