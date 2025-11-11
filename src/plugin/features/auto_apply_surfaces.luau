@@ -19,8 +19,8 @@ local STRING_PLACE_ID = tostring(game.PlaceId)
 
 local OTHER_SELECTED_CONNECTIONS = table.create(100) :: { RBXScriptConnection }
 local SELECTED_PART_CONNECTIONS = table.create(100) :: { RBXScriptConnection }
-local APPLYING_FOR_PARTS = {} :: { [BasePart]: true? }
 local SELECTION_CHANGED_CONNECTION: RBXScriptConnection
+local APPLYING_FOR_PARTS = {} :: { [Instance]: true? }
 local OTHER_SELECTED_CONNECTIONS_COUNT = 0
 local SELECTED_PART_CONNECTIONS_COUNT = 0
 local SELECTION: { Instance }
@@ -141,9 +141,6 @@ local function on_destroying(part: BasePart, third_connection: RBXScriptConnecti
 end
 
 local function auto_apply_for_part(part: BasePart)
-	if APPLYING_FOR_PARTS[part] then
-		return
-	end
 	local third_connection: RBXScriptConnection
 
 	ADD_PART_CONNECTION(part.AttributeChanged:Connect(function(attribute)
@@ -172,29 +169,31 @@ local function auto_apply_for_part(part: BasePart)
 	finish_recording(Enum.FinishRecordingOperation.Commit)
 end
 
+local function can_apply_to(instance: Instance): boolean
+	return (not APPLYING_FOR_PARTS[instance])
+		and instance:IsA("BasePart")
+		and instance.ClassName ~= "Terrain"
+end
+
 local function auto_apply_surfaces_for_selection()
 	SELECTION = Selection:Get()
 	cleanup_previous_selection()
 
 	for _, instance in SELECTION do
-		if instance:IsA("BasePart") and instance.ClassName ~= "Terrain" then
-			auto_apply_for_part(instance)
+		if can_apply_to(instance) then
+			auto_apply_for_part(instance :: any)
 		end
 
 		local connection = instance.DescendantAdded:Connect(function(descendant)
-			if
-				descendant.ClassName ~= "Terrain"
-				and descendant:IsA("BasePart")
-				and not table.find(SELECTION, descendant)
-			then
-				auto_apply_for_part(descendant)
+			if can_apply_to(instance) then
+				auto_apply_for_part(descendant :: any)
 			end
 		end)
 
 		for _, descendant: BasePart in instance:QueryDescendants("BasePart") do
 			if
-				descendant.ClassName ~= "Terrain"
-				and not table.find(SELECTION, descendant)
+				(not APPLYING_FOR_PARTS[descendant :: any])
+				and descendant.ClassName ~= "Terrain"
 			then
 				auto_apply_for_part(descendant :: any)
 			end
