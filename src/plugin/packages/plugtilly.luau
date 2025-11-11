@@ -100,7 +100,7 @@ local function GET_NAME(plugin: Plugin): string
 
 	if string.sub(name, 1, 5) == "user_" then
 		local extention_start = string.find(name, ".", 1, true) :: number
-		name = string.sub(name, 5, #name - (#name - extention_start))
+		name = string.sub(name, 6, #name - (#name - extention_start - 1))
 	end
 
 	return (string.gsub(name, "%-", " "))
